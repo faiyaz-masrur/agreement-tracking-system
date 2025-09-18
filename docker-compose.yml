@@ -1,0 +1,51 @@
+version: '3.9'
+
+services:
+  backend:
+    build: 
+      context: ./backend
+    container_name: django_backend
+    volumes:
+      - ./backend:/backend
+      - static_volume:/backend/static
+      - media_volume:/backend/media
+    depends_on:
+      - db
+    environment:
+      - DB_HOST=db
+      - DB_NAME=atm
+      - DB_USER=root
+      - DB_PASSWORD=root
+      - DJANGO_SUPERUSER_EMAIL=admin@sonali.com
+      - DJANGO_SUPERUSER_PASSWORD=admin12345@
+    ports:
+      - "8000:8000"
+
+  frontend:
+    build: ./frontend
+    container_name: react_frontend
+    ports:
+      - "3000:80"
+    depends_on:
+      - backend
+    volumes:
+      - static_volume:/static
+      - media_volume:/media
+      - ./frontend/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+
+  db:
+    image: mysql:8.0
+    container_name: mysql_db
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: atm
+    volumes:
+      - db_data:/var/lib/mysql
+    expose:
+      - "3306"
+  
+volumes: 
+  db_data:
+  static_volume:
+  media_volume:
